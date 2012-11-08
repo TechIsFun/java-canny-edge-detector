@@ -1,0 +1,235 @@
+\documentclass[12pt,a4paper,twoside,openright,italian]{book}
+\usepackage{babel}
+\usepackage[ansinew]{inputenc} 
+\usepackage[T1]{fontenc}
+\usepackage[safe]{textcomp}
+\usepackage{calc}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage[paper=a4paper,twoside=true]{geometry}
+\geometry{lmargin=4cm,rmargin=2.5cm,tmargin=3cm,bmargin=2cm}
+\geometry{headheight=15pt}%se no fancyhdr rompe le scatole
+\geometry{dvips}
+
+%HEADERS
+\usepackage{fancyhdr}%da mettere sempre dopo cambi a textwidth
+\fancypagestyle{corpo}{\fancyhf{}%
+\pagestyle{fancy}%
+\fancyhead{}%
+\fancyhead[RO]{\rightmark}%
+\fancyhead[LE]{\leftmark}%
+\fancyfoot{}%
+\fancyfoot[CO,CE]{\thepage}%
+\renewcommand\headrulewidth{0.4pt}}
+\fancypagestyle{indice}{\fancyhf{}%
+\pagestyle{fancy}%
+\fancyhead{}%
+\fancyhead[LO,RE]{\rightmark}%
+\fancyhead[RO,LE]{\thepage}
+\fancyfoot{}%
+%\fancyfoot[CO,CE]{\thepage}%
+\renewcommand\headrulewidth{0.4pt}}
+\fancypagestyle{conclusione}{\fancyhf{}%
+\pagestyle{fancy}%
+\fancyhead{}%
+%\fancyhead[LO,RE]{\rightmark}%
+%\fancyhead[RO,LE]{\thepage}
+\fancyfoot{}%
+\fancyfoot[CO,CE]{\thepage}%
+\renewcommand\headrulewidth{0.4pt}}
+
+%IMPORT FIGURE, usare jpg con pdf e eps con dvi!
+\usepackage[dvips]{graphicx}
+
+%MATEMATICA
+\usepackage{amsfonts}	%font matematici
+\usepackage{amsmath}	%miglioramenti visuali per i font
+\usepackage{amssymb}	%altri simboli matematici non standard
+
+%RIFERIMENTI A FIGURE E SEZIONI
+\usepackage[italian]{varioref}
+\labelformat{figure}{figura~#1}
+
+%RIFERIMENTI BIBLIOGRAFICI
+\usepackage{url}
+\usepackage{cite}%forse non necessario
+
+%CAPTION DEI FLOAT
+\usepackage[font={it},labelfont={bf,up}]{caption}
+
+%ASPETTO DEI LISTATI DI CODICE
+\usepackage{color}
+\usepackage{listings}
+\lstloadlanguages{C++, java}
+\lstset{language={Java}}
+%per avere gli accenti
+\lstset{extendedchars=true}
+%\lstset{keywordstyle=\color{blue},basicstyle=\ttfamily\small}
+\lstset{keywordstyle=\color{red}\bfseries,basicstyle=\ttfamily\small}
+%\lstset{ndkeywordstyle=\color{red}\bfseries,basicstyle=\ttfamily\small}
+\lstset{showstringspaces=false}
+\definecolor{grey}{rgb}{.8,.8,.8}
+\definecolor{darkgrey}{rgb}{.9,.9,.9}
+\lstset{commentstyle=\color{grey}\itshape}
+%\lstset{stringstyle=\color{darkgrey}
+\lstset{columns=flexible,tabsize=2}
+\lstset{aboveskip=0pt,belowskip=0pt}
+%eventualmente mettere caption e label per ogni listato
+ 
+\begin{document}
+
+\frontmatter
+
+%titolo
+\begin{titlepage}
+\begin{center}
+\large{\textsc{Università di Padova -- Facoltà di ingegneria}}
+\\
+\LARGE{\textbf{Corso di laurea in Ingegneria Informatica}}
+\\
+\vspace{2cm}
+\Huge{\textbf{CANNY EDGE DETECTOR}}
+\end{center}
+\begin{flushleft}
+
+\vspace{5cm}
+\Large{Professori: Pagello Enrico, Menegatti Emanuele}
+\\
+\vspace{1cm}
+\Large{Studente: Maglie Andrea, matr. 456188}
+\\
+\vspace{1.5cm}
+\vspace{2cm}
+%\Large{Padova, data}
+\end{flushleft}
+\vspace{3cm}
+\begin{center}
+\Large{Anno Accademico 2005/2006 }
+\end{center}
+\end{titlepage}
+
+%%SISTEMARE HEADINGS SBALLATI
+\pagestyle{indice}
+\tableofcontents
+%\listoffigures
+
+\mainmatter
+\pagestyle{corpo}
+%bisogna eliminare i fancyheaders
+
+
+\chapter[Canny Edge Detector]{Canny Edge Detector}
+
+Nel 1986 John Canny individuò tre importanti caratteristice che un edge detector deve avere:
+\begin{enumerate}
+ \item \textbf{Tasso di errore} - l'edge detector deve restituire solo i lati, e dovrebbe trovarli tutti.
+ \item \textbf{Localizzazione} - la distanza tra i pixel del lato trovato e del lato reale deve essere la minima possibile.
+ \item \textbf{Risposta} - l'edge detector non deve identificare più lati quando ne esiste solo uno.
+\end{enumerate}
+L'edge detector è un filtro di convoluzione che smussa il rumore e localizza i lati; l'obiettivo è identificare il filtro che ottimizza i tre criteri sopra riportati. Ciò può essere raggiunto cercando il filtro che massimizza il prodotto \textbf{SNR*localizzazione}, dove SNR è il rapporto segnale/rumore e la localizzazione è un valore che rappresenta il reciproco della distanza del lato localizzato dal lato reale. Una buona approssimazione è data dalla derivata prima della funzione gaussiana:
+
+\begin{equation}
+G(x)=e^{-\frac{x^2}{2{\sigma}^2}}
+\end{equation}
+
+\begin{equation}
+G'(x)=\left(-\frac{x}{{\sigma}^2}\right)e^{\left(-\frac{x^2}{2\sigma ^2}\right)}
+\end{equation}
+In due dimensioni la gaussiana è data da:
+\begin{equation}
+G(x,y)={\sigma}^2e^{\left(-\frac{x^2+y^2}{2{\sigma}^2}\right)}
+\end{equation}
+la quale ha derivate sia lungo \(x\) che lungo \(y\). Facendo la convoluzione tra un'immagine e \(G'\) otteniamo un'immagine con i lati evidenziati, anche in presenza di rumore.
+La convoluzione con una gaussiana a due dimensioni può essere scomposta in due convoluzioni con una gaussiana unidimensionale. 
+In conclusione, l'algoritmo di Canny consiste nei seguenti passi:
+\begin{enumerate}
+	\item Leggere l'immagine \(I\) che dovrà essere processata.
+	\item Creare una maschera gaussiana unidimensionale \(G\) da convolvere con \(I\). La deviazione standard è un parametro dell'algoritmo.
+	\item Creare una maschera unidimensionale per la derivata prima della gaussiana nelle direzioni \(x\) e \(y\), ottenendo \(G_x\) e \(G_y\).
+	\item Calcolare la convoluzione dell'immagine \(I\) con \(G\) lungo le righe per ottenere la componente \(I_x\) dell'immagine lungo \(x\), e lungo le colonne per ottenere la componente \(I_y\) lungo \(y\).
+	\item Calcolare la convoluzione di \(I_x\) con \(G_x\) per ottenere \(I_x'\), cioè la componente lungo \(x\) di \(I\) convoluta con la derivata della gaussiana, e la convoluzione di \(I_y\) con \(G_y\) per ottenere \(I_y'\).
+	\item Il modulo di ogni pixel dell'immagine risultante è dato da:
+		\begin{equation}
+		M(x,y)=\sqrt{I_x'(x,y)^2+I_y'(x,y)^2}
+		\end{equation}
+	\item Applicare la ``non-maxima suppression'', cioè la rimozione dei pixel che non costituiscono massimi locali. Infatti il modulo del gradiente del pixel di un lato è maggiore del modulo del gradiente dei pixel adiacenti e non facenti parti del lato.
+	\item Applicare la sogliatura con isteresi. Vengono usate una soglia alta \(T_h\) e una bassa \(T_l\): ogni pixel avente un valore maggiore di \(T_h\) è assunto come facente parte di un lato; successivamente, ogni pixel collegato al precedente avente un valore più grande di \(T_l\) viene assunto come facente parte del lato.
+\end{enumerate}
+
+\chapter[Codice sorgente]{Codice sorgente}
+
+\section[Canny.java]{Canny.java}
+\lstinputlisting{Canny.java}
+
+\section[CannyShow.java]{CannyShow.java}
+\lstinputlisting{CannyShow.java}
+
+\chapter{Esempi}
+
+L'applicazione viene avviata tramite il comando \texttt{java CannyShow}; l'interfaccia grafica è riportata in \ref{fig:esempio1}. Come si può vedere, i parametri impostabili sono: dimensione del kernel, soglia superiore, soglia inferiore e deviazione standard. Una volta caricato il file immagine e impostati i parametri desiderati, è sufficente cliccare sul pulsante \emph{Avvia processo} per iniziare la computazione dell'algoritmo di Canny. Non appena la computazione è completa, l'immagine risultante verrà visualizzata nella parte destra (indicata con \emph{Immagine in output}).
+In \ref{fig:esempio2} c'è un esempio di utilizzo dell'applicazione con i seguenti parametri:
+\begin{itemize}
+	\item Kernel: 3x3
+	\item Soglia Superiore: 50
+	\item Soglia Inferiore: 20
+	\item Deviazione Standard: 1.0
+\end{itemize}
+Nell'esempio di \ref{fig:esempio3} sono stati utilizzati invece i seguenti valori per i parametri:
+\begin{itemize}
+	\item Kernel: 10x10
+	\item Soglia Superiore: 50
+	\item Soglia Inferiore: 20
+	\item Deviazione Standard: 1.5
+\end{itemize}
+Ulteriori esempi sono riportati in \ref{fig:esempio4}, \ref{fig:esempio5} e \ref{fig:esempio6}.
+
+
+\begin{figure}
+	\centering
+		\includegraphics[width=1.0\textwidth]{esempio1.jpg}
+		\caption{}
+	\label{fig:esempio1}
+\end{figure}
+\begin{figure}
+	\centering
+		\includegraphics[width=1.0\textwidth]{esempio2.jpg}
+		\caption{}
+	\label{fig:esempio2}
+\end{figure}
+\begin{figure}
+	\centering
+		\includegraphics[width=1.0\textwidth]{esempio3.jpg}
+		\caption{}
+	\label{fig:esempio3}
+\end{figure}
+\begin{figure}
+	\centering
+		\includegraphics[width=1.0\textwidth]{esempio4.jpg}
+		\caption{Parametri utilizzati: kernel 3x3, soglia superiore 100, soglia inferiore 50, deviazione standard 1.0. }
+	\label{fig:esempio4}
+\end{figure}
+\begin{figure}
+	\centering
+		\includegraphics[width=1.0\textwidth]{esempio5.jpg}
+		\caption{Parametri utilizzati: kernel 10x10, soglia superiore 200, soglia inferiore 100, deviazione standard 0.45. }
+	\label{fig:esempio5}
+\end{figure}
+\begin{figure}
+	\centering
+		\includegraphics[width=1.0\textwidth]{esempio6.jpg}
+		\caption{Parametri utilizzati: kernel 7x7, soglia superiore 50, soglia inferiore 10, deviazione standard 1.6. }
+	\label{fig:esempio6}
+\end{figure}
+
+
+
+\backmatter
+%\include{conclusione}
+\pagestyle{corpo}
+%carica e configura la bibliografia
+%\bibliographystyle{plain_ita}
+%\addtocontents{toc}{\protect\vspace{2ex}}   %%These two lines are needed in
+%\addcontentsline{toc}{chapter}{Bibliografia}%%order to have a the bibliography
+%\bibliography{bibliografia}
+\nocite{*}
+\end{document}
